@@ -217,7 +217,7 @@ const Layout = ({ children }) => {
                 <a href="#" onClick={handleWhatsApp}>WhatsApp Support</a>
                 {/* <a href="#" onClick={(e) => handleAction(e, "Tutorials")}>Video Tutorials</a> */}
                 <Link to="/contact" >Contact Us</Link>
-                <a >+91-9044425858, +91-6209688930</a>
+                <a >+91-6204442585, <br/> +91-6209688930</a>
               </div>
             </div>
           </div>

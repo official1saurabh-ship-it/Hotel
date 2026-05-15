@@ -110,8 +110,7 @@ ${message}
                   <div className="why-ico">📞</div>
                   <div className="why-text">
                     <h4>Direct Support</h4>
-                    <p>+91-6204442585, +91-6209688930</p>
-                  </div>
+                    <p>+91-6204442585, <br/> +91-6209688930</p>                  </div>
                 </div>
                 <div className="why-item">
                   <div className="why-ico">✉️</div>

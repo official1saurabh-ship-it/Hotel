@@ -70,7 +70,7 @@ const RefundPolicyPage = () => {
                                 <p className="section-desc" style={{ maxWidth: '100%', fontSize: '1rem' }}>
                                     For any questions regarding billing, invoices, or refunds, please reach out to us:
                                     <br /><br />
-                                    <strong>WhatsApp Support:</strong> +91-9044425858, +91-6209688930<br />
+                                    <strong>WhatsApp Support:</strong> +91-6204442585, <br/> +91-6209688930<br />
                                     <strong>Email:</strong> info@biosoftech.com
                                 </p>
                             </div>

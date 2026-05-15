@@ -86,7 +86,7 @@ const PrivacyPolicyPage = () => {
                   If you have any questions about this Privacy Policy, please contact us at:
                   <br /><br />
                   <strong>Email:</strong> info@biosoftech.com<br />
-                  <strong>Phone:</strong> +91-9044425858, +91-6209688930<br />
+                  <strong>Phone:</strong> +91-6204442585, <br/> +91-6209688930<br />
                   <strong>Address:</strong> India
                 </p>
               </div>
