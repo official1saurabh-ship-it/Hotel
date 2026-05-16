@@ -74,7 +74,7 @@ const ContactPage = () => {
       phone: phone,
       message: message,
       date_time: now,
-      site_name: SITE_NAME,
+     site_name: SITE_NAME,
     };
 
     try {
