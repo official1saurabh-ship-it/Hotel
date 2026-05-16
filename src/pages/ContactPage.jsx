@@ -55,12 +55,19 @@ const ContactPage = () => {
       owner_name: name,
       user_email: email,
       site_name: SITE_NAME,
+
+      company_name: "Biosoftech Solutions",
+      support_email: "info@biosoftech.com",
+
+      to_email: email // 👈 MOST IMPORTANT (user ko mail jaayega)
     };
 
     // Parameters for "Contact Us" (Admin Inquiry)
     // Screenshot 2: expects {{to_email}} for recipient and others in body.
     const ownerParams = {
-      to_email: 'ansh@biosoftech.com', // Admin receives this
+      to_email: "ansh@biosoftech.com",
+      cc_email: "kishan@biosoftech.com",
+
       owner_name: name,
       hotel_name: hotelName,
       user_email: email,
