@@ -1,11 +1,38 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../components/Layout';
+import emailjs from '@emailjs/browser';
+
+// EMAILJS CONFIGURATION
+// These are now handled via environment variables for better security and flexibility
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID_ORG = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_ORG;
+const EMAILJS_TEMPLATE_ID_USER = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_USER;
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+const SITE_NAME = "Hotel Mitra";
+
+// Initialize EmailJS with Public Key
+if (EMAILJS_PUBLIC_KEY) {
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+  console.log('EmailJS Initialized with Public Key');
+} else {
+  console.warn('EmailJS Public Key is missing! Check your .env file.');
+}
 
 const ContactPage = () => {
   const observerRef = useRef(null);
+  const formRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState({ type: '', message: '' });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setStatus({ type: '', message: '' });
+
+    // Debugging logs (Remove in production)
+    console.log('Using Service ID:', EMAILJS_SERVICE_ID ? 'Loaded ✅' : 'Missing ❌');
+    console.log('Using Template ID:', EMAILJS_TEMPLATE_ID_ORG ? 'Loaded ✅' : 'Missing ❌');
+
     const formData = new FormData(e.target);
     const name = formData.get('name');
     const hotelName = formData.get('hotelName');
@@ -22,29 +49,75 @@ const ContactPage = () => {
       hour12: true
     });
 
-    const text = `\u{1F4E9} *New Business Inquiry Received From Website Contact Form*
+    // Parameters for "Welcome to Restron Mitra" (User Confirmation)
+    // Screenshot 1: expects {{user_email}} for recipient and {{owner_name}} in body.
+    const userParams = {
+      owner_name: name,
+      user_email: email,
+      site_name: SITE_NAME,
+    };
 
-\u{1F539} *Full Name:* ${name}
-\u{1F3E8} *Business/Hotel Name:* ${hotelName}
-\u{1F4F1} *Phone Number:* ${phone}
-\u{1F4E7} *Email Address:* ${email}
+    // Parameters for "Contact Us" (Admin Inquiry)
+    // Screenshot 2: expects {{to_email}} for recipient and others in body.
+    const ownerParams = {
+      to_email: 'ansh@biosoftech.com', // Admin receives this
+      owner_name: name,
+      hotel_name: hotelName,
+      user_email: email,
+      phone: phone,
+      message: message,
+      date_time: now,
+      site_name: SITE_NAME,
+    };
 
-\u{1F4CC} *Inquiry Purpose:* Hotel Application Requirement
+    try {
+      // Basic validation to prevent sending with placeholder IDs
+      if (!EMAILJS_SERVICE_ID || EMAILJS_SERVICE_ID.includes('YOUR_')) {
+        throw new Error('Service ID is missing or not configured in .env');
+      }
+      if (!EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY.includes('YOUR_')) {
+        throw new Error('Public Key is missing or not configured in .env');
+      }
 
-\u{1F4DD} *Remarks / Requirement Details:*
-${message}
+      // 1. Send Email to Organization (Admin Notification)
+      if (EMAILJS_TEMPLATE_ID_ORG) {
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID_ORG,
 
-\u{1F310} *Source:* Hotel Website Contact Page
-\u{23F0} *Received On:* ${now}
+          ownerParams,
+          EMAILJS_PUBLIC_KEY
+        );
+      }
 
-*Please connect with the client for further discussion and support*`;
+      // 2. Send Confirmation Email to User (Auto-reply)
+      if (EMAILJS_TEMPLATE_ID_USER) {
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID_USER,
+          userParams,
+          EMAILJS_PUBLIC_KEY
+        );
+      }
 
-    const encodedText = encodeURIComponent(text).replace(/%0A/g, "%0D%0A");
+      setStatus({
+        type: 'success',
+        message: 'Message sent successfully! We will get back to you soon.'
+      });
+      e.target.reset();
+    } catch (error) {
+      console.error('Detailed EmailJS Error:', error);
 
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=919044425858&text=${encodedText}`;
+      // Extract specific error message from EmailJS response if available
+      const errorMsg = error?.text || error?.message || 'Unknown error';
 
-    window.open(whatsappUrl, "_blank");
-    e.target.reset();
+      setStatus({
+        type: 'error',
+        message: `Error: ${errorMsg}. Please check your .env IDs and Dashboard settings.`
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -110,7 +183,7 @@ ${message}
                   <div className="why-ico">📞</div>
                   <div className="why-text">
                     <h4>Direct Support</h4>
-                    <p>+91-6204442585, <br/> +91-6209688930</p>                  </div>
+                    <p>+91-6204442585, <br /> +91-6209688930</p>                  </div>
                 </div>
                 <div className="why-item">
                   <div className="why-ico">✉️</div>
@@ -135,7 +208,20 @@ ${message}
             <div className="reveal delay-2">
               <div className="card" style={{ padding: '40px' }}>
                 <h3 className="display-md" style={{ fontSize: '1.5rem', marginBottom: '32px' }}>Send a Message</h3>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                  {status.message && (
+                    <div style={{
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      marginBottom: '20px',
+                      backgroundColor: status.type === 'success' ? '#dcfce7' : '#fee2e2',
+                      color: status.type === 'success' ? '#166534' : '#991b1b',
+                      fontSize: '0.9rem',
+                      fontWeight: '500'
+                    }}>
+                      {status.message}
+                    </div>
+                  )}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--mist)', marginBottom: '8px' }}>Full Name</label>
@@ -190,7 +276,14 @@ ${message}
                       style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-warm)', background: 'var(--ivory)', fontSize: '0.9rem', outline: 'none', resize: 'none' }}
                     ></textarea>
                   </div>
-                  <button type="submit" className="btn btn-fire btn-full btn-lg">Send Message 🚀</button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn btn-fire btn-full btn-lg"
+                    style={{ opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Message 🚀'}
+                  </button>
                 </form>
               </div>
             </div>
